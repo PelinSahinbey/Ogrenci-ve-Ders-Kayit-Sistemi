@@ -1,0 +1,173 @@
+using System;
+using System.Collections.Generic;
+
+public interface IPerson
+{
+    void Login();
+    void BilgiGoster();
+}
+
+public abstract class Kisi : IPerson
+{
+    public string Ad { get; set; }
+    public string Soyad { get; set; }
+
+    public Kisi(string ad, string soyad)
+    {
+        Ad = ad;
+        Soyad = soyad;
+    }
+
+    public void Login()
+    {
+        Console.WriteLine($"{Ad} {Soyad} giriş yaptı.");
+    }
+
+    public abstract void BilgiGoster();  // Türetilmiş sınıflarda özelleştirilecek
+}
+
+public class Ogrenci : Kisi
+{
+    public string OgrenciNo { get; set; }
+    public List<Ders> Dersler { get; set; }
+
+    public Ogrenci(string ad, string soyad, string ogrenciNo)
+        : base(ad, soyad)
+    {
+        OgrenciNo = ogrenciNo;
+        Dersler = new List<Ders>();
+    }
+
+    public void DersEkle(Ders ders)
+    {
+        if (!Dersler.Contains(ders))
+        {
+            Dersler.Add(ders);
+            Console.WriteLine($"{Ad} {Soyad}, {ders.Ad} dersine kaydoldu.");
+        }
+        else
+        {
+            Console.WriteLine($"{Ad} {Soyad} zaten {ders.Ad} dersine kayıtlı.");
+        }
+    }
+
+    public override void BilgiGoster()
+    {
+        Console.WriteLine($"Öğrenci Adı: {Ad} {Soyad}");
+        Console.WriteLine($"Öğrenci No: {OgrenciNo}");
+        Console.WriteLine("Kayıtlı Dersler:");
+        foreach (var ders in Dersler)
+        {
+            Console.WriteLine($"- {ders.Ad} ({ders.Kredi} kredi)");
+        }
+    }
+}
+
+public class OgretimGorevlisi : Kisi
+{
+    public string SicilNo { get; set; }
+    public List<Ders> Dersler { get; set; }
+
+    public OgretimGorevlisi(string ad, string soyad, string sicilNo)
+        : base(ad, soyad)
+    {
+        SicilNo = sicilNo;
+        Dersler = new List<Ders>();
+    }
+
+    public void DersEkle(Ders ders)
+    {
+        if (!Dersler.Contains(ders))
+        {
+            Dersler.Add(ders);
+            Console.WriteLine($"{Ad} {Soyad}, {ders.Ad} dersini veriyor.");
+        }
+        else
+        {
+            Console.WriteLine($"{Ad} {Soyad} zaten {ders.Ad} dersini veriyor.");
+        }
+    }
+
+    public override void BilgiGoster()
+    {
+        Console.WriteLine($"Öğretim Görevlisi Adı: {Ad} {Soyad}");
+        Console.WriteLine($"Sicil No: {SicilNo}");
+        Console.WriteLine("Verdiği Dersler:");
+        foreach (var ders in Dersler)
+        {
+            Console.WriteLine($"- {ders.Ad} ({ders.Kredi} kredi)");
+        }
+    }
+}
+
+public class Ders
+{
+    public string Ad { get; set; }
+    public int Kredi { get; set; }
+    public OgretimGorevlisi OgretimGorevlisi { get; set; }
+    public List<Ogrenci> Ogrenciler { get; set; }
+
+    public Ders(string ad, int kredi, OgretimGorevlisi ogretimGorevlisi)
+    {
+        Ad = ad;
+        Kredi = kredi;
+        OgretimGorevlisi = ogretimGorevlisi;
+        Ogrenciler = new List<Ogrenci>();
+    }
+
+    public void KayitOl(Ogrenci ogrenci)
+    {
+        if (!Ogrenciler.Contains(ogrenci))
+        {
+            Ogrenciler.Add(ogrenci);
+            ogrenci.DersEkle(this);
+            Console.WriteLine($"{ogrenci.Ad} {ogrenci.Soyad} {Ad} dersine kaydoldu.");
+        }
+        else
+        {
+            Console.WriteLine($"{ogrenci.Ad} {ogrenci.Soyad} zaten bu derse kayıtlı.");
+        }
+    }
+
+    public void DersBilgisi()
+    {
+        Console.WriteLine($"Ders Adı: {Ad}");
+        Console.WriteLine($"Kredi: {Kredi}");
+        Console.WriteLine($"Öğretim Görevlisi: {OgretimGorevlisi.Ad} {OgretimGorevlisi.Soyad}");
+        Console.WriteLine("Kayıtlı Öğrenciler:");
+        foreach (var ogrenci in Ogrenciler)
+        {
+            Console.WriteLine($"- {ogrenci.Ad} {ogrenci.Soyad}");
+        }
+    }
+}
+
+class Program
+{
+    static void Main(string[] args)
+    {
+        // Öğretim Görevlisi: Emrah Sarıçiçek
+        var ogretimGorevlisi = new OgretimGorevlisi("Emrah", "Sarıçiçek", "98765");
+
+        // Dersler: Nesneye Dayalı Programlama ve Görsel Programlama
+        var ders1 = new Ders("Nesneye Dayalı Programlama", 4, ogretimGorevlisi);
+        var ders2 = new Ders("Görsel Programlama", 3, ogretimGorevlisi);
+
+        // Öğrenciler
+        var ogrenci1 = new Ogrenci("Pelin", "Şahinbey", "2023001");
+        var ogrenci2 = new Ogrenci("Mina", "Özgül", "2023002");
+
+        // Öğrencilerin derslere kaydolması
+        ders1.KayitOl(ogrenci1);
+        ders1.KayitOl(ogrenci2);
+        ders2.KayitOl(ogrenci1);
+
+        // Derslerin bilgilerini gösterme
+        ders1.DersBilgisi();
+        ders2.DersBilgisi();
+
+        // Öğrencilerin bilgilerini gösterme
+        ogrenci1.BilgiGoster();
+        ogrenci2.BilgiGoster();
+    }
+}
